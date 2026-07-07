@@ -2,116 +2,159 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# -----------------------------
-# Configuración
-# -----------------------------
+# ===================================================
+# CONFIGURACIÓN
+# ===================================================
+
 st.set_page_config(
-    page_title="Dashboard - Predicción de Diabetes",
+    page_title="DiabetesPredictBI",
     page_icon="🏥",
     layout="wide"
 )
 
-st.title("🏥 Dashboard Analítico - Predicción de Diabetes")
+st.title("🏥 DiabetesPredictBI")
+st.markdown("### Dashboard Analítico para la Predicción de Diabetes")
+st.markdown("---")
 
-# -----------------------------
-# Cargar datos
-# -----------------------------
+# ===================================================
+# CARGAR DATOS
+# ===================================================
+
 df = pd.read_csv("dataset_personal.csv")
 
-# =============================
-# KPI
-# =============================
+# ===================================================
+# KPIs
+# ===================================================
 
 total = len(df)
-
 diabetes = len(df[df["Diagnostico_Diabetes"]=="Si"])
-
 porcentaje = diabetes/total*100
 
 col1,col2,col3 = st.columns(3)
 
-col1.metric("Total Pacientes",total)
+with col1:
+    st.metric("👨‍⚕️ Total Pacientes", total)
 
-col2.metric("Pacientes con Diabetes",diabetes)
+with col2:
+    st.metric("🩺 Casos de Diabetes", diabetes)
 
-col3.metric("Porcentaje Diabetes",f"{porcentaje:.2f}%")
+with col3:
+    st.metric("📈 % Diabetes", f"{porcentaje:.2f}%")
 
-st.divider()
+st.markdown("---")
 
-# =============================
-# Gráfico de Barras
-# =============================
+# ===================================================
+# FILA 1
+# ===================================================
 
-st.subheader("Pacientes por Grupo de Edad")
+col1,col2 = st.columns(2)
 
-conteo = df["Grupo_Edad"].value_counts()
+with col1:
 
-fig,ax = plt.subplots()
+    st.subheader("Pacientes por Grupo de Edad")
 
-ax.bar(conteo.index,conteo.values)
+    conteo = df["Grupo_Edad"].value_counts()
 
-ax.set_xlabel("Grupo de Edad")
+    fig,ax = plt.subplots(figsize=(6,4))
 
-ax.set_ylabel("Cantidad")
+    ax.bar(conteo.index,conteo.values)
 
-st.pyplot(fig)
+    ax.set_xlabel("Grupo")
 
-# =============================
-# Histograma
-# =============================
+    ax.set_ylabel("Cantidad")
 
-st.subheader("Distribución del Nivel de Glucosa")
+    st.pyplot(fig,use_container_width=True)
 
-fig,ax = plt.subplots()
+with col2:
 
-ax.hist(df["Glucosa"],bins=20)
+    st.subheader("Distribución del Nivel de Glucosa")
 
-ax.set_xlabel("Glucosa")
+    fig,ax = plt.subplots(figsize=(6,4))
 
-ax.set_ylabel("Frecuencia")
+    ax.hist(df["Glucosa"],bins=20)
 
-st.pyplot(fig)
+    ax.set_xlabel("Glucosa")
 
-# =============================
-# Heatmap
-# =============================
+    ax.set_ylabel("Frecuencia")
 
-st.subheader("Correlación entre Variables")
+    st.pyplot(fig,use_container_width=True)
 
-corr = df[["Edad","IMC","Glucosa","Presion_Arterial","Indice_Metabolico"]].corr()
+st.markdown("---")
 
-fig,ax = plt.subplots()
+# ===================================================
+# FILA 2
+# ===================================================
 
-imagen = ax.imshow(corr)
+col1,col2 = st.columns([2,1])
 
-plt.colorbar(imagen)
+with col1:
 
-ax.set_xticks(range(len(corr.columns)))
+    st.subheader("Correlación entre Variables")
 
-ax.set_xticklabels(corr.columns,rotation=45)
+    corr = df[
+        [
+            "Edad",
+            "IMC",
+            "Glucosa",
+            "Presion_Arterial",
+            "Indice_Metabolico"
+        ]
+    ].corr()
 
-ax.set_yticks(range(len(corr.columns)))
+    fig,ax = plt.subplots(figsize=(7,5))
 
-ax.set_yticklabels(corr.columns)
+    img = ax.imshow(corr)
 
-st.pyplot(fig)
+    plt.colorbar(img)
 
-# =============================
-# Storytelling
-# =============================
+    ax.set_xticks(range(len(corr.columns)))
+    ax.set_xticklabels(corr.columns,rotation=45)
 
-st.header("Hallazgos Principales")
+    ax.set_yticks(range(len(corr.columns)))
+    ax.set_yticklabels(corr.columns)
 
-st.success("1. Los pacientes con mayor glucosa presentan mayor probabilidad de diabetes.")
+    st.pyplot(fig,use_container_width=True)
 
-st.success("2. El IMC elevado incrementa significativamente el riesgo.")
+with col2:
 
-st.success("3. Los adultos mayores concentran la mayor cantidad de casos.")
+    st.subheader("Resumen")
 
-st.header("Recomendaciones")
+    st.write("**Pacientes Totales:**",total)
 
-st.info("• Implementar campañas preventivas para pacientes con IMC alto.")
+    st.write("**Con Diabetes:**",diabetes)
 
-st.info("• Incrementar controles médicos en adultos mayores.")
+    st.write("**Sin Diabetes:**",total-diabetes)
 
-st.info("• Promover actividad física y alimentación saludable.")
+    st.progress(int(porcentaje))
+
+st.markdown("---")
+
+# ===================================================
+# STORYTELLING
+# ===================================================
+
+col1,col2 = st.columns(2)
+
+with col1:
+
+    st.subheader("📊 Hallazgos Principales")
+
+    st.success("La glucosa es la variable con mayor relación con la diabetes.")
+
+    st.success("Los pacientes con IMC alto presentan mayor riesgo.")
+
+    st.success("La mayoría de casos corresponde a adultos y adultos mayores.")
+
+with col2:
+
+    st.subheader("💡 Recomendaciones")
+
+    st.info("Realizar campañas preventivas para pacientes con IMC elevado.")
+
+    st.info("Incrementar controles médicos para adultos mayores.")
+
+    st.info("Promover hábitos saludables y actividad física.")
+
+st.markdown("---")
+
+st.caption("Business Intelligence & Big Data | Dashboard Analítico de Predicción de Diabetes")
